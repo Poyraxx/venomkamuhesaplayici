@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VenomRP Kamu Hesaplayıcı</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --bg-soft: #171e25;
+      --panel: #141b22;
+      --panel-strong: #0f151b;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f2f5f7;
+      --muted: #a0adb8;
+      --accent: #d1a252;
+      --accent-strong: #e5bc76;
+      --accent-soft: rgba(209, 162, 82, 0.12);
+      --success: #85c3af;
+      --warning: #8ab3df;
+      --danger: #e48d7f;
+      --shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+      --radius-xl: 20px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --transition: 180ms ease;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "Bahnschrift", "Segoe UI Variable Text", "Trebuchet MS", sans-serif;
+      background: linear-gradient(180deg, #10161c 0%, #0c1116 100%);
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      display: none;
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1280px, calc(100% - 28px));
+      margin: 16px auto 22px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero,
+    .panel {
+      position: relative;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 22px;
+      display: grid;
+      gap: 18px;
+      animation: rise-in 300ms ease both;
+    }
+
+    .hero::after,
+    .panel::after {
+      display: none;
+    }
+
+    .hero-top {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.95fr);
+      align-items: start;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 7px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(209, 162, 82, 0.16);
+      background: rgba(209, 162, 82, 0.08);
+      color: var(--accent-strong);
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      font-family: "Bahnschrift SemiCondensed", "Segoe UI Variable Display", sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      margin-top: 8px;
+      font-size: clamp(1.9rem, 3vw, 2.7rem);
+      line-height: 1.04;
+    }
+
+    .hero-copy p,
+    .summary-copy {
+      margin: 0;
+      max-width: 56ch;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.98rem;
+    }
+
+    .hero-note {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(209, 162, 82, 0.16);
+      background: rgba(209, 162, 82, 0.08);
+      color: #f6e9cf;
+      font-size: 0.92rem;
+    }
+
+    .controls {
+      display: grid;
+      gap: 12px;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 0.92rem;
+      letter-spacing: 0.02em;
+    }
+
+    .field input,
+    .field select,
+    button {
+      font: inherit;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      min-height: 44px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      outline: none;
+      color: var(--text);
+      background: var(--panel-strong);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: rgba(209, 162, 82, 0.65);
+      box-shadow: 0 0 0 3px rgba(209, 162, 82, 0.12);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat-card {
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--panel-strong);
+      display: grid;
+      gap: 4px;
+    }
+
+    .stat-card span {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .stat-card strong {
+      font-size: clamp(1.3rem, 2.3vw, 1.8rem);
+      color: var(--text);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(320px, 0.96fr) minmax(320px, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 18px;
+      animation: rise-in 320ms ease both;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .panel-head p,
+    .meta-text {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.5;
+    }
+
+    .rule-groups {
+      display: grid;
+      gap: 16px;
+    }
+
+    .rule-group {
+      display: grid;
+      gap: 12px;
+    }
+
+    .group-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 0;
+      color: #f4fbff;
+      font-size: 1.05rem;
+    }
+
+    .group-count {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(127, 163, 183, 0.16);
+      background: rgba(9, 24, 36, 0.85);
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .rule-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .rule-card,
+    .queue-item,
+    .summary-block {
+      position: relative;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      background: var(--panel-strong);
+    }
+
+    .rule-card {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      transition: border-color var(--transition);
+    }
+
+    .rule-card:hover {
+      border-color: rgba(209, 162, 82, 0.28);
+    }
+
+    .rule-card h3 {
+      font-size: 1rem;
+      line-height: 1.3;
+    }
+
+    .badge-row,
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .badge,
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 0.76rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .badge.kamu,
+    .tag.kamu {
+      color: #ffe3b6;
+      background: rgba(232, 166, 62, 0.13);
+      border-color: rgba(232, 166, 62, 0.2);
+    }
+
+    .badge.uyari,
+    .tag.uyari {
+      color: #cae5ff;
+      background: rgba(121, 180, 240, 0.14);
+      border-color: rgba(121, 180, 240, 0.18);
+    }
+
+    .badge.yaptirim,
+    .tag.yaptirim {
+      color: #ffc4b8;
+      background: rgba(255, 143, 122, 0.12);
+      border-color: rgba(255, 143, 122, 0.18);
+    }
+
+    .badge.modifiyer,
+    .tag.modifiyer {
+      color: #cbf2e7;
+      background: rgba(118, 208, 180, 0.13);
+      border-color: rgba(118, 208, 180, 0.16);
+    }
+
+    .rule-actions {
+      display: grid;
+      gap: 12px;
+      margin-top: auto;
+    }
+
+    .rule-actions select {
+      width: 100%;
+    }
+
+    .stage-options {
+      display: grid;
+      gap: 8px;
+    }
+
+    .stage-options button {
+      width: 100%;
+      justify-content: flex-start;
+      text-align: left;
+    }
+
+    .stage-option {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #182029;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .stage-option.is-warning {
+      color: #d7e8fb;
+      background: rgba(138, 179, 223, 0.1);
+      border-color: rgba(138, 179, 223, 0.18);
+    }
+
+    .stage-option.is-penalty {
+      color: #f7ebd4;
+      background: rgba(209, 162, 82, 0.1);
+      border-color: rgba(209, 162, 82, 0.18);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-row .btn-primary {
+      width: 100%;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      transition: transform var(--transition), filter var(--transition), background var(--transition), color var(--transition);
+    }
+
+    button:hover {
+      filter: brightness(1.04);
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-ghost {
+      min-height: 44px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #18120a;
+    }
+
+    .btn-secondary {
+      background: #182029;
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .queue-list,
+    .summary-stack,
+    .plain-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .queue-empty,
+    .empty-state {
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px dashed rgba(255, 255, 255, 0.12);
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.02);
+      line-height: 1.6;
+    }
+
+    .queue-item {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      animation: slide-in 220ms ease both;
+    }
+
+    .queue-item strong,
+    .summary-block strong {
+      font-size: 1rem;
+      line-height: 1.3;
+    }
+
+    .queue-meta,
+    .summary-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .queue-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .queue-controls button {
+      min-width: 42px;
+    }
+
+    .summary-block {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .summary-total {
+      display: grid;
+      gap: 4px;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(209, 162, 82, 0.2);
+      background: rgba(209, 162, 82, 0.08);
+    }
+
+    .summary-total span {
+      color: #fff0cf;
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .summary-total strong {
+      font-size: clamp(2rem, 4.4vw, 3rem);
+      line-height: 1;
+      color: #fff8e8;
+    }
+
+    .plain-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .plain-list li {
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.02);
+      line-height: 1.45;
+      color: #e8f4fb;
+    }
+
+    .plain-list li small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .footer-note {
+      padding: 13px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, rgba(141, 179, 197, 0), rgba(141, 179, 197, 0.2), rgba(141, 179, 197, 0));
+      margin: 2px 0;
+    }
+
+    @keyframes rise-in {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slide-in {
+      from {
+        opacity: 0;
+        transform: translateX(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @media (max-width: 1180px) {
+      .workspace {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .hero-top {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(100% - 18px, 100%);
+        margin: 10px auto 18px;
+      }
+
+      .hero,
+      .panel {
+        padding: 18px;
+        border-radius: 22px;
+      }
+
+      .hero-note {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .control-grid,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .rule-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .panel-head,
+      .summary-item,
+      .queue-meta {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-top">
+        <div class="hero-copy">
+          <div class="eyebrow">VenomRP Ceza Paneli</div>
+          <h1>Kamu, Warn ve Ek Yaptırımları Tek Ekranda Hesapla</h1>
+          <p>İhlalleri ekle, warn toplamını gir ve sistemin otomatik olarak en yüksek kamu cezasını tam, kalan kamu cezalarını yarım hesaplamasına izin ver.</p>
+        </div>
+        <div class="controls">
+          <div class="control-grid">
+            <div class="field">
+              <label for="searchInput">İhlal ara</label>
+              <input id="searchInput" type="search" placeholder="Örn. ADK, RDM, warn, combatlog">
+            </div>
+            <div class="field">
+              <label for="warnInput">Toplam warn</label>
+              <input id="warnInput" type="number" min="0" step="1" value="0" inputmode="numeric">
+            </div>
+          </div>
+          <div class="stats" id="statsGrid"></div>
+        </div>
+      </div>
+      <div class="hero-note">
+        <strong>En yüksek kamu cezası tam sayılır, diğer kamu cezaları yarım ve yukarı yuvarlanır.</strong>
+        <span class="muted">İnisiyatif notu: Sadece Topluluk Yöneticileri, Genel Sorumlu ve Denetmen inisiyatif kullanabilir.</span>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>İhlal Kataloğu</h2>
+            <p>Kuralı seç, gerekiyorsa aşamasını belirle ve listeye ekle.</p>
+          </div>
+          <div class="tag-list">
+            <span class="tag kamu">Kamu</span>
+            <span class="tag uyari">Uyarı / Warn</span>
+            <span class="tag yaptirim">Jail / Ban / Blacklist</span>
+            <span class="tag modifiyer">Modifiyer</span>
+          </div>
+        </div>
+        <div id="catalogRoot" class="rule-groups"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Seçilen İhlaller</h2>
+            <p>En yüksek kamu tam sayılır; bu liste sadece takip içindir.</p>
+          </div>
+          <button class="btn-ghost" type="button" data-action="clear-queue">Temizle</button>
+        </div>
+        <div id="queueRoot" class="queue-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Sonuç Özeti</h2>
+            <p>Anlık hesaplanan kamu, ek yaptırım ve açıklamalar burada görünür.</p>
+          </div>
+        </div>
+        <div id="summaryRoot" class="summary-stack"></div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const venomApp = (() => {
+      const CATEGORY_ORDER = [
+        "Sunucu Kural İhlalleri",
+        "Temel DarkRP Kural İhlalleri",
+        "Özel Durumlar"
+      ];
+
+      const RULES = [
+        { id: "safe-zone", ad: "Safe Zone İhlali", kategori: "Sunucu Kural İhlalleri", tip: "kamu", kamu: 10, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        {
+          id: "prop-kurali",
+          ad: "Prop Kurallarının İhlali",
+          kategori: "Sunucu Kural İhlalleri",
+          tip: "asama",
+          kamu: 0,
+          asamaSecenekleri: [
+            { id: "warning", ad: "İlk uyarı", tip: "uyari", kamu: 0, notlar: ["İlk ihlalde sözlü uyarı verilir."], modifiyer: null, ekYaptirimlar: [{ tur: "uyari", metin: "İlk uyarı" }] },
+            { id: "continued", ad: "Devamında 20 kamu", tip: "kamu", kamu: 20, notlar: [], modifiyer: null, ekYaptirimlar: [] }
+          ],
+          notlar: [],
+          modifiyer: null,
+          ekYaptirimlar: []
+        },
+        { id: "ooc-kufur", ad: "OOC Küfür / Hakaret", kategori: "Sunucu Kural İhlalleri", tip: "kamu", kamu: 20, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "adk", ad: "ADK", kategori: "Sunucu Kural İhlalleri", tip: "kamu", kamu: 30, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "yetkiliye-adk", ad: "Yetkiliye ADK", kategori: "Sunucu Kural İhlalleri", tip: "kamu", kamu: 40, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "yetkiliye-kufur", ad: "Yetkiliye Küfür / Hakaret", kategori: "Sunucu Kural İhlalleri", tip: "kamu", kamu: 25, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        {
+          id: "soundpad",
+          ad: "Araba Dışında Soundpad Kullanımı",
+          kategori: "Sunucu Kural İhlalleri",
+          tip: "asama",
+          kamu: 0,
+          asamaSecenekleri: [
+            { id: "warning", ad: "İlk uyarı", tip: "uyari", kamu: 0, notlar: ["İlk kullanımda uyarı geçilir."], modifiyer: null, ekYaptirimlar: [{ tur: "uyari", metin: "İlk uyarı" }] },
+            { id: "continued", ad: "Devamında 15 dk jail", tip: "jail", kamu: 0, notlar: [], modifiyer: null, ekYaptirimlar: [{ tur: "jail", metin: "15 dakika jail" }] }
+          ],
+          notlar: [],
+          modifiyer: null,
+          ekYaptirimlar: []
+        },
+        { id: "silah-kurali", ad: "Silah Kuralları İhlali", kategori: "Sunucu Kural İhlalleri", tip: "kamu", kamu: 10, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "rol-kurali", ad: "Rol Kuralları İhlali", kategori: "Sunucu Kural İhlalleri", tip: "kamu", kamu: 10, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "base-kurali", ad: "Base Kuralları İhlali", kategori: "Sunucu Kural İhlalleri", tip: "kamu", kamu: 10, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        {
+          id: "advert-kurali",
+          ad: "Advert Kuralları İhlali",
+          kategori: "Sunucu Kural İhlalleri",
+          tip: "asama",
+          kamu: 0,
+          asamaSecenekleri: [
+            { id: "warning", ad: "İlk uyarı", tip: "uyari", kamu: 0, notlar: ["İlk advert ihlalinde uyarı verilir."], modifiyer: null, ekYaptirimlar: [{ tur: "uyari", metin: "İlk uyarı" }] },
+            { id: "continued", ad: "Devamında 7 kamu", tip: "kamu", kamu: 7, notlar: [], modifiyer: null, ekYaptirimlar: [] }
+          ],
+          notlar: [],
+          modifiyer: null,
+          ekYaptirimlar: []
+        },
+        { id: "mug-kurali", ad: "Mug Kuralları İhlali", kategori: "Sunucu Kural İhlalleri", tip: "kamu", kamu: 5, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "isyan-kurali", ad: "İsyan Kuralları İhlali", kategori: "Sunucu Kural İhlalleri", tip: "kamu", kamu: 20, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "raid-kurali", ad: "Raid Kuralları İhlali", kategori: "Sunucu Kural İhlalleri", tip: "kamu", kamu: 20, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "ct-raid", ad: "CT Raid", kategori: "Sunucu Kural İhlalleri", tip: "kamu", kamu: 25, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        {
+          id: "ucuncu-parti",
+          ad: "3. Parti Yazılım Kullanımı",
+          kategori: "Sunucu Kural İhlalleri",
+          tip: "ban",
+          kamu: 0,
+          asamaSecenekleri: [],
+          notlar: [],
+          modifiyer: null,
+          ekYaptirimlar: [{ tur: "ban", metin: "Sınırsız yasaklama" }]
+        },
+        { id: "bug-abuse", ad: "Sistem Açıklarını Kullanmak (Bug Abuse)", kategori: "Sunucu Kural İhlalleri", tip: "kamu", kamu: 50, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        {
+          id: "cezadan-kacmak",
+          ad: "Cezadan Kaçmak",
+          kategori: "Sunucu Kural İhlalleri",
+          tip: "modifiyer",
+          kamu: 0,
+          asamaSecenekleri: [],
+          notlar: ["Alacağı kamu cezasına doğrudan +25 eklenir."],
+          modifiyer: { tur: "kamu_ekle", kamu: 25, metin: "+25 kamu eklenir." },
+          ekYaptirimlar: []
+        },
+        {
+          id: "yasak-rol",
+          ad: "Pedofili / Zoofili Rolleri",
+          kategori: "Sunucu Kural İhlalleri",
+          tip: "ban",
+          kamu: 0,
+          asamaSecenekleri: [],
+          notlar: [],
+          modifiyer: null,
+          ekYaptirimlar: [{ tur: "ban", metin: "Sınırsız yasaklama" }]
+        },
+        { id: "a-side-yalan", ad: "A. Side Yalan", kategori: "Sunucu Kural İhlalleri", tip: "kamu", kamu: 15, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+
+        { id: "meta", ad: "Meta", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 10, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "rdm", ad: "RDM", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 30, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "mass-rdm", ad: "MassRDM", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 60, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "fda", ad: "FDA", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 5, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "door-abuse", ad: "Door Abuse", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 10, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        {
+          id: "devlet-job-abuse",
+          ad: "Devlet Görevlisi | Job Abuse",
+          kategori: "Temel DarkRP Kural İhlalleri",
+          tip: "asama",
+          kamu: 0,
+          asamaSecenekleri: [
+            { id: "first", ad: "İlk uygulama 5 kamu", tip: "kamu", kamu: 5, notlar: [], modifiyer: null, ekYaptirimlar: [] },
+            { id: "continued", ad: "Devamında blacklist", tip: "blacklist", kamu: 0, notlar: [], modifiyer: null, ekYaptirimlar: [{ tur: "blacklist", metin: "Blacklist" }] }
+          ],
+          notlar: [],
+          modifiyer: null,
+          ekYaptirimlar: []
+        },
+        { id: "job-abuse", ad: "Job Abuse", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 15, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "mixing", ad: "Mixing", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 5, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "fear-rp", ad: "FearRP", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 10, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "mad-rp", ad: "MadRP", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 15, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "fail-rp", ad: "FailRP", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 5, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "powergaming", ad: "Powergaming", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 10, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        {
+          id: "rdt",
+          ad: "RDT",
+          kategori: "Temel DarkRP Kural İhlalleri",
+          tip: "asama",
+          kamu: 0,
+          asamaSecenekleri: [
+            { id: "first", ad: "İlk uygulama 5 kamu", tip: "kamu", kamu: 5, notlar: [], modifiyer: null, ekYaptirimlar: [] },
+            { id: "continued", ad: "Devamında blacklist", tip: "blacklist", kamu: 0, notlar: [], modifiyer: null, ekYaptirimlar: [{ tur: "blacklist", metin: "Blacklist" }] }
+          ],
+          notlar: [],
+          modifiyer: null,
+          ekYaptirimlar: []
+        },
+        {
+          id: "devlet-rda",
+          ad: "Devlet Görevlisi | RDA",
+          kategori: "Temel DarkRP Kural İhlalleri",
+          tip: "asama",
+          kamu: 0,
+          asamaSecenekleri: [
+            { id: "first", ad: "İlk uygulama 5 kamu", tip: "kamu", kamu: 5, notlar: [], modifiyer: null, ekYaptirimlar: [] },
+            { id: "continued", ad: "Devamında blacklist", tip: "blacklist", kamu: 0, notlar: [], modifiyer: null, ekYaptirimlar: [{ tur: "blacklist", metin: "Blacklist" }] }
+          ],
+          notlar: [],
+          modifiyer: null,
+          ekYaptirimlar: []
+        },
+        { id: "rda", ad: "RDA", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 5, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        {
+          id: "nlr",
+          ad: "NLR",
+          kategori: "Temel DarkRP Kural İhlalleri",
+          tip: "asama",
+          kamu: 0,
+          asamaSecenekleri: [
+            { id: "nlr", ad: "NLR 15 kamu", tip: "kamu", kamu: 15, notlar: [], modifiyer: null, ekYaptirimlar: [] },
+            { id: "revengekill", ad: "Revengekill 20 kamu", tip: "kamu", kamu: 20, notlar: [], modifiyer: null, ekYaptirimlar: [] }
+          ],
+          notlar: [],
+          modifiyer: null,
+          ekYaptirimlar: []
+        },
+        { id: "copbait", ad: "Copbait", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 5, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "izinsiz-erp", ad: "İzinsiz ERP", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 20, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "rol-ortasinda-ooc", ad: "Rol Ortasında OOC Çıkmak", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 10, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "troll", ad: "Troll", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 20, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "admin-side-troll", ad: "Admin Side Troll", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 30, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        { id: "ooc-kiskirtma", ad: "OOC Kışkırtma", kategori: "Temel DarkRP Kural İhlalleri", tip: "kamu", kamu: 15, asamaSecenekleri: [], notlar: [], modifiyer: null, ekYaptirimlar: [] },
+        {
+          id: "combatlog",
+          ad: "Combatlog",
+          kategori: "Temel DarkRP Kural İhlalleri",
+          tip: "kamu",
+          kamu: 10,
+          asamaSecenekleri: [],
+          notlar: ["Karşı tarafı zarara uğratacak bir rolde çıkıldıysa zarar ayrıca karşılanmalıdır."],
+          modifiyer: null,
+          ekYaptirimlar: [{ tur: "not", metin: "Gerekirse zarar karşılanmalı" }]
+        },
+
+        {
+          id: "rahatsizlik",
+          ad: "Rahatsızlık / Taciz Rolü",
+          kategori: "Özel Durumlar",
+          tip: "kamu",
+          kamu: 20,
+          asamaSecenekleri: [],
+          notlar: [
+            "Herhangi bir rol olmadan sadece kadın olduğu için rahatsızlık veren kişilere uygulanır.",
+            "Rahatsızlık warnları birikirse perma ban uygulanır."
+          ],
+          modifiyer: null,
+          ekYaptirimlar: [{ tur: "warn", metin: "Rahatsızlık nedeniyle warn" }]
+        }
+      ];
+
+      const RULES_BY_ID = new Map(RULES.map((rule) => [rule.id, rule]));
+      const state = {
+        search: "",
+        warnTotal: 0,
+        selectedEntries: []
+      };
+
+      let nextEntryId = 1;
+
+      function createPreview(rule) {
+        if (rule.modifiyer) {
+          return { label: rule.modifiyer.metin, tone: "modifiyer" };
+        }
+
+        if (rule.tip === "ban" || hasActionType(rule, "ban")) {
+          return { label: "Sınırsız yasaklama", tone: "yaptirim" };
+        }
+
+        if (rule.asamaSecenekleri && rule.asamaSecenekleri.length > 0) {
+          const penaltyOption = rule.asamaSecenekleri.find((option) => option.kamu > 0);
+          const sanctionOption = rule.asamaSecenekleri.find((option) => (option.ekYaptirimlar || []).length > 0);
+
+          if (penaltyOption) {
+            return { label: penaltyOption.ad, tone: penaltyOption.tip === "kamu" ? "kamu" : "yaptirim" };
+          }
+
+          if (sanctionOption) {
+            return { label: sanctionOption.ad, tone: sanctionOption.tip === "uyari" ? "uyari" : "yaptirim" };
+          }
+
+          return { label: "Aşamalı işlem", tone: "uyari" };
+        }
+
+        if (rule.kamu > 0) {
+          return { label: `${rule.kamu} kamu`, tone: "kamu" };
+        }
+
+        if (rule.ekYaptirimlar && rule.ekYaptirimlar.length > 0) {
+          return { label: rule.ekYaptirimlar[0].metin, tone: "yaptirim" };
+        }
+
+        return { label: "İşlem", tone: "uyari" };
+      }
+
+      function hasActionType(rule, type) {
+        return (rule.ekYaptirimlar || []).some((item) => item.tur === type);
+      }
+
+      function normalize(text) {
+        return (text || "")
+          .toLocaleLowerCase("tr-TR")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
+      }
+
+      function matchesSearch(rule) {
+        if (!state.search) {
+          return true;
+        }
+
+        const haystack = normalize([
+          rule.ad,
+          rule.kategori,
+          rule.tip,
+          rule.notlar.join(" "),
+          ...(rule.asamaSecenekleri || []).map((option) => `${option.ad} ${option.notlar.join(" ")}`)
+        ].join(" "));
+
+        return haystack.includes(state.search);
+      }
+
+      function collectRuleTags(rule) {
+        const tags = [];
+
+        if (rule.modifiyer) {
+          tags.push({ label: "Modifiyer", tone: "modifiyer" });
+        } else if (rule.asamaSecenekleri && rule.asamaSecenekleri.length > 0) {
+          tags.push({ label: "Aşamalı", tone: "uyari" });
+        } else if (rule.kamu > 0) {
+          tags.push({ label: `${rule.kamu} Kamu`, tone: "kamu" });
+        }
+
+        if (hasActionType(rule, "ban")) {
+          tags.push({ label: "Perma Ban", tone: "yaptirim" });
+        }
+
+        if ((rule.ekYaptirimlar || []).some((item) => item.tur === "warn")) {
+          tags.push({ label: "Warn", tone: "uyari" });
+        }
+
+        const preview = createPreview(rule);
+        if (preview.label) {
+          tags.push({ label: preview.label, tone: preview.tone });
+        }
+
+        return tags.slice(0, 3);
+      }
+
+      function getResolvedOutcome(rule, optionId) {
+        const stage = (rule.asamaSecenekleri || []).find((option) => option.id === optionId)
+          || ((rule.asamaSecenekleri || [])[0] ?? null);
+        const source = stage || rule;
+        const baseTip = source.tip || rule.tip;
+
+        return {
+          ruleId: rule.id,
+          ad: rule.ad,
+          kategori: rule.kategori,
+          asama: stage ? stage.ad : "",
+          tip: baseTip,
+          kamu: Number(source.kamu || 0),
+          siraBazliKamu: baseTip === "kamu",
+          modifiyer: source.modifiyer || rule.modifiyer || null,
+          ekYaptirimlar: [...(rule.ekYaptirimlar || []), ...(stage ? stage.ekYaptirimlar || [] : [])],
+          notlar: uniqueTexts([...(rule.notlar || []), ...(stage ? stage.notlar || [] : [])])
+        };
+      }
+
+      function uniqueTexts(items) {
+        return [...new Set(items.filter(Boolean))];
+      }
+
+      function formatQueueLabel(rule, optionId) {
+        const outcome = getResolvedOutcome(rule, optionId);
+        return outcome.asama ? `${outcome.ad} - ${outcome.asama}` : outcome.ad;
+      }
+
+      function describeOutcome(outcome) {
+        if (outcome.modifiyer) {
+          return outcome.modifiyer.metin;
+        }
+
+        if (outcome.tip === "kamu" && outcome.kamu > 0) {
+          return `${outcome.kamu} kamu`;
+        }
+
+        const firstAction = outcome.ekYaptirimlar[0];
+        if (firstAction) {
+          return firstAction.metin;
+        }
+
+        if (outcome.tip === "uyari") {
+          return "İlk uyarı";
+        }
+
+        return "İşlem";
+      }
+
+      function getWarnThresholdOutcome(warnTotal) {
+        if (warnTotal >= 20) {
+          return {
+            label: "20 warn eşiği",
+            kamu: 0,
+            yaptirimlar: [
+              { tur: "ban", metin: "7 gün yasaklama" },
+              { tur: "not", metin: "Bütün warnlar silinir" }
+            ],
+            notlar: ["20 warn dolduğunda alt warn kamu bonusları ayrıca eklenmez."]
+          };
+        }
+
+        if (warnTotal >= 15) {
+          return { label: "15 warn eşiği", kamu: 20, yaptirimlar: [], notlar: [] };
+        }
+
+        if (warnTotal >= 10) {
+          return { label: "10 warn eşiği", kamu: 15, yaptirimlar: [], notlar: [] };
+        }
+
+        if (warnTotal >= 5) {
+          return { label: "5 warn eşiği", kamu: 5, yaptirimlar: [], notlar: [] };
+        }
+
+        return null;
+      }
+
+      function formatBreakdownAmount(item) {
+        if (item.mode === "tam") {
+          return `${item.applied} kamu`;
+        }
+
+        if (item.mode === "yarim") {
+          return `${item.applied} kamu`;
+        }
+
+        if (item.mode === "warn") {
+          return `+${item.applied} kamu`;
+        }
+
+        if (item.mode === "modifiyer") {
+          return `+${item.applied} kamu`;
+        }
+
+        return `${item.applied} kamu`;
+      }
+
+      function formatBreakdownNote(item) {
+        if (item.mode === "tam") {
+          return `${item.raw} kamu tam uygulandı ve ana kamu cezası sayıldı.`;
+        }
+
+        if (item.mode === "yarim") {
+          return `${item.raw} kamu yarıya düştü ve yukarı yuvarlandı.`;
+        }
+
+        if (item.mode === "warn") {
+          return "Warn eşiği bonusu düz eklendi.";
+        }
+
+        if (item.mode === "modifiyer") {
+          return "Yarım kuralına girmeyen sabit ekleme.";
+        }
+
+        return "";
+      }
+
+      function formatActionTone(action) {
+        if (!action) {
+          return "uyari";
+        }
+
+        return action.tur === "warn" || action.tur === "uyari" ? "uyari" : "yaptirim";
+      }
+
+      function groupByText(items) {
+        const map = new Map();
+
+        for (const item of items) {
+          const key = `${item.baslik}__${item.metin}`;
+          if (map.has(key)) {
+            map.get(key).adet += 1;
+          } else {
+            map.set(key, { ...item, adet: 1 });
+          }
+        }
+
+        return [...map.values()];
+      }
+
+      function calculateState(entries = state.selectedEntries, warnTotal = state.warnTotal) {
+        let toplamKamu = 0;
+        const kamuDokumu = [];
+        const ekYaptirimlar = [];
+        const notlar = [
+          "En yüksek kamu cezası tam sayılır, diğer kamu cezaları yarım ve yukarı yuvarlanır.",
+          "Sadece Topluluk Yöneticileri, Genel Sorumlu ve Denetmen inisiyatif kullanabilir."
+        ];
+        const resolvedEntries = [];
+
+        for (const entry of entries) {
+          const rule = RULES_BY_ID.get(entry.ruleId);
+          if (!rule) {
+            continue;
+          }
+
+          resolvedEntries.push({
+            entry,
+            outcome: getResolvedOutcome(rule, entry.optionId)
+          });
+        }
+
+        const tamKamuIndex = resolvedEntries.reduce((bestIndex, item, index, list) => {
+          if (!(item.outcome.kamu > 0 && item.outcome.siraBazliKamu)) {
+            return bestIndex;
+          }
+
+          if (bestIndex === -1) {
+            return index;
+          }
+
+          return item.outcome.kamu > list[bestIndex].outcome.kamu ? index : bestIndex;
+        }, -1);
+
+        for (let index = 0; index < resolvedEntries.length; index += 1) {
+          const { outcome } = resolvedEntries[index];
+
+          if (outcome.modifiyer && outcome.modifiyer.tur === "kamu_ekle") {
+            toplamKamu += outcome.modifiyer.kamu;
+            kamuDokumu.push({
+              label: outcome.ad,
+              stage: outcome.asama,
+              raw: outcome.modifiyer.kamu,
+              applied: outcome.modifiyer.kamu,
+              mode: "modifiyer"
+            });
+          } else if (outcome.kamu > 0) {
+            if (outcome.siraBazliKamu) {
+              const tamUygulanan = index === tamKamuIndex;
+              const uygulanmis = tamUygulanan ? outcome.kamu : Math.ceil(outcome.kamu / 2);
+              toplamKamu += uygulanmis;
+              kamuDokumu.push({
+                label: outcome.ad,
+                stage: outcome.asama,
+                raw: outcome.kamu,
+                applied: uygulanmis,
+                mode: tamUygulanan ? "tam" : "yarim"
+              });
+            } else {
+              toplamKamu += outcome.kamu;
+              kamuDokumu.push({
+                label: outcome.ad,
+                stage: outcome.asama,
+                raw: outcome.kamu,
+                applied: outcome.kamu,
+                mode: "tam"
+              });
+            }
+          }
+
+          for (const action of outcome.ekYaptirimlar) {
+            ekYaptirimlar.push({
+              baslik: outcome.asama ? `${outcome.ad} - ${outcome.asama}` : outcome.ad,
+              metin: action.metin,
+              tur: action.tur
+            });
+          }
+
+          notlar.push(...outcome.notlar);
+        }
+
+        const warnOutcome = getWarnThresholdOutcome(warnTotal);
+        if (warnOutcome) {
+          if (warnOutcome.kamu > 0) {
+            toplamKamu += warnOutcome.kamu;
+            kamuDokumu.push({
+              label: warnOutcome.label,
+              stage: "",
+              raw: warnOutcome.kamu,
+              applied: warnOutcome.kamu,
+              mode: "warn"
+            });
+          }
+
+          for (const action of warnOutcome.yaptirimlar) {
+            ekYaptirimlar.push({
+              baslik: warnOutcome.label,
+              metin: action.metin,
+              tur: action.tur
+            });
+          }
+
+          notlar.push(...warnOutcome.notlar);
+        }
+
+        return {
+          toplamKamu,
+          kamuDokumu,
+          warnSonucu: warnOutcome,
+          ekYaptirimlar: groupByText(ekYaptirimlar),
+          genelNotlar: uniqueTexts(notlar)
+        };
+      }
+
+      function renderStats(summary) {
+        const statsGrid = document.getElementById("statsGrid");
+        statsGrid.innerHTML = [
+          { label: "Seçili İhlal", value: state.selectedEntries.length },
+          { label: "Toplam Kamu", value: summary.toplamKamu },
+          { label: "Ek Yaptırım", value: summary.ekYaptirimlar.length }
+        ].map((item) => `
+          <div class="stat-card">
+            <span>${item.label}</span>
+            <strong>${item.value}</strong>
+          </div>
+        `).join("");
+      }
+
+      function renderCatalog() {
+        const root = document.getElementById("catalogRoot");
+        const sections = CATEGORY_ORDER.map((category) => {
+          const visibleRules = RULES.filter((rule) => rule.kategori === category && matchesSearch(rule));
+
+          if (!visibleRules.length) {
+            return "";
+          }
+
+          const cards = visibleRules.map((rule) => {
+            const tags = collectRuleTags(rule)
+              .map((tag) => `<span class="badge ${tag.tone}">${tag.label}</span>`)
+              .join("");
+
+            const stageButtonsHtml = rule.asamaSecenekleri && rule.asamaSecenekleri.length > 0
+              ? `
+                <div class="stage-options">
+                  ${rule.asamaSecenekleri.map((option) => `
+                    <button
+                      class="stage-option ${option.kamu > 0 || option.tip === "kamu" ? "is-penalty" : "is-warning"}"
+                      type="button"
+                      data-action="add-stage"
+                      data-rule-id="${rule.id}"
+                      data-option-id="${option.id}"
+                    >${option.ad}</button>
+                  `).join("")}
+                </div>
+              `
+              : "";
+
+            const actionHtml = stageButtonsHtml || `
+              <div class="btn-row">
+                <button class="btn-primary" type="button" data-action="add-rule" data-rule-id="${rule.id}">Ekle</button>
+              </div>
+            `;
+
+            return `
+              <article class="rule-card">
+                <div class="badge-row">${tags}</div>
+                <div>
+                  <h3>${rule.ad}</h3>
+                  <p class="meta-text">${rule.kategori}</p>
+                </div>
+                ${rule.notlar.length ? `<p class="meta-text">${rule.notlar[0]}</p>` : `<p class="meta-text">${describeRuleMeta(rule)}</p>`}
+                <div class="rule-actions">
+                  ${actionHtml}
+                </div>
+              </article>
+            `;
+          }).join("");
+
+          return `
+            <section class="rule-group">
+              <h3 class="group-title">
+                <span>${category}</span>
+                <span class="group-count">${visibleRules.length} kural</span>
+              </h3>
+              <div class="rule-grid">${cards}</div>
+            </section>
+          `;
+        }).join("");
+
+        root.innerHTML = sections || `<div class="empty-state">Aramanla eşleşen bir ihlal bulunamadı.</div>`;
+      }
+
+      function describeRuleMeta(rule) {
+        if (rule.modifiyer) {
+          return rule.modifiyer.metin;
+        }
+
+        if (rule.asamaSecenekleri && rule.asamaSecenekleri.length > 0) {
+          return "Aşama seçimine göre kamu, uyarı veya ek yaptırım uygular.";
+        }
+
+        if (rule.kamu > 0) {
+          return `${rule.kamu} kamu ile sonuçlanır.`;
+        }
+
+        if (rule.ekYaptirimlar && rule.ekYaptirimlar.length > 0) {
+          return rule.ekYaptirimlar[0].metin;
+        }
+
+        return "Standart işlem.";
+      }
+
+      function renderQueue() {
+        const root = document.getElementById("queueRoot");
+
+        if (!state.selectedEntries.length) {
+          root.innerHTML = `
+            <div class="queue-empty">
+              Henüz bir ihlal seçilmedi. Soldaki kartlardan kural eklediğinde burada listelenecek.
+            </div>
+          `;
+          return;
+        }
+
+        root.innerHTML = state.selectedEntries.map((entry, index) => {
+          const rule = RULES_BY_ID.get(entry.ruleId);
+          const outcome = getResolvedOutcome(rule, entry.optionId);
+          const label = formatQueueLabel(rule, entry.optionId);
+          const badgeTone = outcome.modifiyer ? "modifiyer" : outcome.tip === "kamu" ? "kamu" : formatActionTone(outcome.ekYaptirimlar[0]);
+
+          return `
+            <article class="queue-item">
+              <div class="queue-meta">
+                <div>
+                  <strong>${index + 1}. ${label}</strong>
+                  <div class="tag-list" style="margin-top: 8px;">
+                    <span class="tag ${badgeTone}">${describeOutcome(outcome)}</span>
+                  </div>
+                </div>
+                <span class="muted">${rule.kategori}</span>
+              </div>
+              <div class="queue-controls">
+                <button class="btn-ghost" type="button" data-queue-action="remove" data-entry-id="${entry.id}">Sil</button>
+              </div>
+            </article>
+          `;
+        }).join("");
+      }
+
+      function renderSummary() {
+        const root = document.getElementById("summaryRoot");
+        const summary = calculateState();
+
+        const kamuHtml = summary.kamuDokumu.length
+          ? `
+            <ul class="plain-list">
+              ${summary.kamuDokumu.map((item) => `
+                <li>
+                  ${item.label}${item.stage ? ` - ${item.stage}` : ""}: <strong>${formatBreakdownAmount(item)}</strong>
+                  <small>${formatBreakdownNote(item)}</small>
+                </li>
+              `).join("")}
+            </ul>
+          `
+          : `<div class="empty-state">Kamu cezası oluşturan bir seçim yok.</div>`;
+
+        const ekYaptirimHtml = summary.ekYaptirimlar.length
+          ? `
+            <ul class="plain-list">
+              ${summary.ekYaptirimlar.map((item) => `
+                <li>
+                  ${item.baslik}: <strong>${item.adet > 1 ? `${item.adet}x ` : ""}${item.metin}</strong>
+                </li>
+              `).join("")}
+            </ul>
+          `
+          : `<div class="empty-state">Ek yaptırım bulunmuyor.</div>`;
+
+        const warnHtml = summary.warnSonucu
+          ? `
+            <ul class="plain-list">
+              <li>
+                ${summary.warnSonucu.label}
+                <small>${summary.warnSonucu.kamu > 0 ? `+${summary.warnSonucu.kamu} kamu eklendi.` : "Bu eşik kamu eklemeden doğrudan yaptırım üretir."}</small>
+              </li>
+            </ul>
+          `
+          : `<div class="empty-state">Warn eşiği aktif değil.</div>`;
+
+        const notesHtml = summary.genelNotlar.length
+          ? `
+            <ul class="plain-list">
+              ${summary.genelNotlar.map((note) => `<li>${note}</li>`).join("")}
+            </ul>
+          `
+          : `<div class="empty-state">Genel not bulunmuyor.</div>`;
+
+        root.innerHTML = `
+          <section class="summary-total">
+            <span>Toplam Kamu</span>
+            <strong>${summary.toplamKamu}</strong>
+          </section>
+
+          <section class="summary-block">
+            <div class="summary-item">
+              <strong>Kamu Dökümü</strong>
+              <span class="muted">${summary.kamuDokumu.length} kalem</span>
+            </div>
+            ${kamuHtml}
+          </section>
+
+          <section class="summary-block">
+            <div class="summary-item">
+              <strong>Ek Yaptırımlar</strong>
+              <span class="muted">${summary.ekYaptirimlar.length} sonuç</span>
+            </div>
+            ${ekYaptirimHtml}
+          </section>
+
+          <section class="summary-block">
+            <div class="summary-item">
+              <strong>Warn Eşiği Sonucu</strong>
+              <span class="muted">Toplam warn: ${state.warnTotal}</span>
+            </div>
+            ${warnHtml}
+          </section>
+
+          <section class="summary-block">
+            <div class="summary-item">
+              <strong>Genel Notlar</strong>
+              <span class="muted">${summary.genelNotlar.length} not</span>
+            </div>
+            ${notesHtml}
+          </section>
+
+          <div class="footer-note">
+            Bu hesaplayıcı tek HTML dosyası olarak çalışır. Kurallar veri tabanlı tanımlandığı için yeni ihlal eklemek veya kamu değerini güncellemek için yalnızca JavaScript içindeki kural listesi düzenlenir.
+          </div>
+        `;
+
+        renderStats(summary);
+      }
+
+      function addRule(ruleId, forcedOptionId = "") {
+        const rule = RULES_BY_ID.get(ruleId);
+        if (!rule) {
+          return;
+        }
+
+        const optionId = forcedOptionId || "";
+
+        state.selectedEntries = [
+          ...state.selectedEntries,
+          { id: `entry-${nextEntryId++}`, ruleId: rule.id, optionId }
+        ];
+        sync();
+      }
+
+      function removeEntry(entryId) {
+        state.selectedEntries = state.selectedEntries.filter((item) => item.id !== entryId);
+        sync();
+      }
+
+      function sync() {
+        renderCatalog();
+        renderQueue();
+        renderSummary();
+      }
+
+      function bindEvents() {
+        document.addEventListener("input", (event) => {
+          const target = event.target;
+
+          if (target.id === "searchInput") {
+            state.search = normalize(target.value.trim());
+            renderCatalog();
+            return;
+          }
+
+          if (target.id === "warnInput") {
+            const value = Number.parseInt(target.value, 10);
+            state.warnTotal = Number.isFinite(value) && value > 0 ? value : 0;
+            if (state.warnTotal === 0 && target.value !== "0" && target.value !== "") {
+              target.value = "0";
+            }
+            renderSummary();
+            return;
+          }
+
+        });
+
+        document.addEventListener("click", (event) => {
+          const button = event.target.closest("button");
+          if (!button) {
+            return;
+          }
+
+          const action = button.dataset.action;
+          if (action === "add-rule") {
+            addRule(button.dataset.ruleId);
+            return;
+          }
+
+          if (action === "add-stage") {
+            addRule(button.dataset.ruleId, button.dataset.optionId);
+            return;
+          }
+
+          if (action === "clear-queue") {
+            state.selectedEntries = [];
+            sync();
+            return;
+          }
+
+          const queueAction = button.dataset.queueAction;
+          if (!queueAction) {
+            return;
+          }
+
+          const entryId = button.dataset.entryId;
+          if (queueAction === "remove") {
+            removeEntry(entryId);
+          }
+        });
+      }
+
+      function runSelfTests() {
+        const cases = [
+          {
+            name: "Safe Zone tek başına",
+            warn: 0,
+            entries: [{ ruleId: "safe-zone" }],
+            expect: { toplamKamu: 10 }
+          },
+          {
+            name: "Safe Zone + OOC Küfür + Mug",
+            warn: 0,
+            entries: [{ ruleId: "safe-zone" }, { ruleId: "ooc-kufur" }, { ruleId: "mug-kurali" }],
+            expect: { toplamKamu: 28 }
+          },
+          {
+            name: "Prop ilk uyarı",
+            warn: 0,
+            entries: [{ ruleId: "prop-kurali", optionId: "warning" }],
+            expect: { toplamKamu: 0, yaptirim: "İlk uyarı" }
+          },
+          {
+            name: "Advert devamı + Mug",
+            warn: 0,
+            entries: [{ ruleId: "advert-kurali", optionId: "continued" }, { ruleId: "mug-kurali" }],
+            expect: { toplamKamu: 10 }
+          },
+          {
+            name: "En yüksek kamu sonradan eklenirse de tam sayılır",
+            warn: 0,
+            entries: [{ ruleId: "safe-zone" }, { ruleId: "mug-kurali" }, { ruleId: "adk" }],
+            expect: { toplamKamu: 38 }
+          },
+          {
+            name: "Soundpad devamı",
+            warn: 0,
+            entries: [{ ruleId: "soundpad", optionId: "continued" }],
+            expect: { toplamKamu: 0, yaptirim: "15 dakika jail" }
+          },
+          {
+            name: "ADK + Cezadan Kaçmak",
+            warn: 0,
+            entries: [{ ruleId: "adk" }, { ruleId: "cezadan-kacmak" }],
+            expect: { toplamKamu: 55 }
+          },
+          {
+            name: "10 warn + Safe Zone",
+            warn: 10,
+            entries: [{ ruleId: "safe-zone" }],
+            expect: { toplamKamu: 25 }
+          },
+          {
+            name: "20 warn eşiği",
+            warn: 20,
+            entries: [],
+            expect: { toplamKamu: 0, yaptirim: "7 gün yasaklama" }
+          },
+          {
+            name: "3. Parti yazılım",
+            warn: 0,
+            entries: [{ ruleId: "ucuncu-parti" }],
+            expect: { toplamKamu: 0, yaptirim: "Sınırsız yasaklama" }
+          },
+          {
+            name: "Pedofili / Zoofili",
+            warn: 0,
+            entries: [{ ruleId: "yasak-rol" }],
+            expect: { toplamKamu: 0, yaptirim: "Sınırsız yasaklama" }
+          }
+        ];
+
+        return cases.map((testCase) => {
+          const entries = testCase.entries.map((entry, index) => ({
+            id: `test-${index}`,
+            ruleId: entry.ruleId,
+            optionId: entry.optionId || ""
+          }));
+
+          const result = calculateState(entries, testCase.warn);
+          const hasAction = testCase.expect.yaptirim
+            ? result.ekYaptirimlar.some((item) => item.metin === testCase.expect.yaptirim)
+            : true;
+
+          return {
+            name: testCase.name,
+            pass: result.toplamKamu === testCase.expect.toplamKamu && hasAction,
+            actual: {
+              toplamKamu: result.toplamKamu,
+              yaptirimlar: result.ekYaptirimlar.map((item) => item.metin)
+            },
+            expect: testCase.expect
+          };
+        });
+      }
+
+      function init() {
+        bindEvents();
+        sync();
+      }
+
+      return {
+        RULES,
+        calculateState,
+        getResolvedOutcome,
+        runSelfTests,
+        init
+      };
+    })();
+
+    if (typeof window !== "undefined") {
+      window.venomApp = venomApp;
+    }
+
+    if (typeof document !== "undefined") {
+      venomApp.init();
+    }
+  </script>
+</body>
+</html>
